@@ -1,36 +1,57 @@
-local UEHelpers = require("UEHelpers")
+require("UEHelpers")
+
 local utils = require("utils")
 
 local leyakDisabled = true
 
---[[
-  Public functions
-]]--
-
-function onSpawn()
-  utils.log("Leyak spawned.")
-
-  if utils.isDebug() then
-    utils.sendWarningMessage("Leyak spawned.", 3)
-  end
-
-  ExecuteWithDelay(2000, function()
-    if leyakDisabled then
-      despawn()
-    end
-  end)
+--- A simple getter to get the value of the leyakDisabled local variable.
+local function isDisabled()
+  return leyakDisabled
 end
 
-function despawn()
-  local leyak = FindFirstOf("AI_Controller_Leyak_C")
+--- Callback function for the hook on NPC_Leyak_C:UpdateLeyakVisibility
+--- It will retrieve the current Leyak from the context.
+--- It will make it drop it's essence.
+--- It will make it stuck so the game despawns it cleanly.
+--- Note: Calling the AAAI_Controller_Leyak_C:Despawn() method will result
+--- in the game crashing when exiting because it does not clean up the
+--- game memory.
+local function onUpdateLeyakVisibility(Context)
+  ---@type ANPC_Leyak_C
+  local leyakNPC = Context:get()
 
-  leyak:Despawn()
+  utils.log("Dropping leyak essence.")
 
-  utils.log("Leyak Despawned.")
-  utils.sendWarningMessage("Leyak got widowed.", 0)
+  leyakNPC:DropEssence()
+
+  utils.log("Sticking Leyak")
+
+  leyakNPC.AbsolutelyStuck = true
+
+  utils.log("Leyak stuck.")
 end
 
-function toggle()
+--- This function will disable the Leyak by changing
+--- the leyakDisabled variable to true.
+local function disable()
+  leyakDisabled = true
+
+  utils.log("Leyak disabled.")
+  utils.sendWarningMessage("Leyak disabled", 0)
+end
+
+--- This function will enable the Leyak by changing
+--- the leyakDisabled variable to false.
+local function enable()
+  leyakDisabled = false
+
+  utils.log("Leyak enabled.")
+  utils.sendWarningMessage("Leyak enabled", 3)
+end
+
+--- This function will invert the value of
+--- leyakDisabled by calling the appropriate function.
+local function toggle()
   if leyakDisabled then
     enable()
 
@@ -40,26 +61,8 @@ function toggle()
   disable()
 end
 
---[[
-  Private functions
-]]--
-
-function disable()
-  leyakDisabled = true
-
-  utils.log("Leyak disabled.")
-  utils.sendWarningMessage("Leyak disabled", 0)
-end
-
-function enable()
-  leyakDisabled = false
-
-  utils.log("Leyak enabled.")
-  utils.sendWarningMessage("Leyak enabled", 3)
-end
-
 return {
-  onSpawn = onSpawn,
-  despawn = despawn,
-  toggle = toggle
+  onUpdateLeyakVisibility = onUpdateLeyakVisibility,
+  toggle = toggle,
+  isDisabled = isDisabled
 }
