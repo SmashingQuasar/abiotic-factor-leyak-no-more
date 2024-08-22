@@ -1,8 +1,11 @@
-local UEHelpers = require("UEHelpers")
+require("UEHelpers")
+
 local utils = require("utils")
 local leyak = require("leyak")
 
-function onF2()
+--- Callback function that will trigger when the F2 key is pressed.
+--- It will toggle the Leyak.
+local function onF2()
   ExecuteInGameThread(function ()
     utils.log("F2 pressed.")
 

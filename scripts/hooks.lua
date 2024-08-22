@@ -1,45 +1,37 @@
-local UEHelpers = require("UEHelpers")
+require("UEHelpers")
+
 local utils = require("utils")
-local leyak = require("leyak")
+local leyakModule = require("leyak")
 
-local leyakSpawnPreId = -1
-local leyakSpawnPostId = -1
-local leyakSpawnHooked = false
+local leyakUpdateVisibilityHooked = false
 
-function registerMainHook()
-  utils.log("Registering main hook.")
+local function mainHook(Context)
+  local leyakNPC = Context:get()
 
-  NotifyOnNewObject("/Game/Blueprints/Environment/Systems/Abiotic_AIDirector.Abiotic_AIDirector_C", function()
-    registerHooks()
-  end)
+  if leyakModule.isDisabled() then
+    leyakNPC.SeenDespawnTime = 0.1
+    leyakNPC.TimeAllowedToBeStuck = 0.1
+  end
 
-  utils.log("Main hook registered.")
-end
-
-function registerHooks()
-  utils.log("Registering sub hooks.")
-  
-  registerLeyakSpawnHook()
-  
-  utils.log("Sub hooks registered.")
-end
-
-function registerLeyakSpawnHook()
-  utils.log("Registering Leyak spawn hook.")
-
-  if leyakSpawnHooked then
-    utils.log("Leyak spawn hook already registered, skipping.")
-
+  if leyakUpdateVisibilityHooked == true then
     return
   end
 
-  leyakSpawnPreId, leyakSpawnPostId = RegisterHook("/Game/Blueprints/Environment/Systems/Abiotic_AIDirector.Abiotic_AIDirector_C:SpawnLeyak", function()
-    leyak.onSpawn()
+  RegisterHook("/Game/Blueprints/Characters/NPCs/NPC_Leyak.NPC_Leyak_C:UpdateLeyakVisibility", function(Context)
+    leyakModule.onUpdateLeyakVisibility(Context)
+
+    leyakUpdateVisibilityHooked = true
+  end)
+end
+
+local function registerMainHook()
+  utils.log("Registering main hook.")
+
+  NotifyOnNewObject("/Game/Blueprints/Characters/NPCs/NPC_Leyak.NPC_Leyak_C", function(Context)
+    mainHook(Context)
   end)
 
-  leyakSpawnHooked = true
-
-  utils.log("Leyak spawn hook registered. Hook preId: " .. tostring(leyakSpawnPreId) .. " - Hook postId: " .. tostring(leyakSpawnPostId))
+  utils.log("Main hook registered.")
 end
 
 return {
