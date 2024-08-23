@@ -23,12 +23,18 @@ local function onUpdateLeyakVisibility(Context)
   utils.log("Dropping leyak essence.")
 
   leyakNPC:DropEssence()
+  leyakNPC.SeenDespawnTime = 0.1
+  leyakNPC.TimeAllowedToBeStuck = 0.1
 
   utils.log("Sticking Leyak")
 
   leyakNPC.AbsolutelyStuck = true
 
   utils.log("Leyak stuck.")
+
+  local message = utils.generateDeathMessage("Leyak")
+
+  utils.sendScopedChatMessage(message, { R = 1.0, G = 0.0, B = 0.0, A = 1.0 })
 end
 
 --- This function will disable the Leyak by changing
