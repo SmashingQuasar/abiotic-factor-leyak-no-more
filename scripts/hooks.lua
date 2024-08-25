@@ -5,23 +5,25 @@ local leyakModule = require("leyak")
 
 local leyakUpdateVisibilityHooked = false
 
-local function mainHook()
+local function registerLeyakUpdateVisibilityHook()
   if leyakUpdateVisibilityHooked == true or not leyakModule.isDisabled() then
+    utils.log("Not registering main hook, main hook already registered.")
+
     return
   end
 
   RegisterHook("/Game/Blueprints/Characters/NPCs/NPC_Leyak.NPC_Leyak_C:UpdateLeyakVisibility", function(Context)
-    leyakUpdateVisibilityHooked = true
-
     leyakModule.onUpdateLeyakVisibility(Context)
   end)
+
+  leyakUpdateVisibilityHooked = true
 end
 
 local function registerMainHook()
   utils.log("Registering main hook.")
 
-  NotifyOnNewObject("/Game/Blueprints/Characters/NPCs/NPC_Leyak.NPC_Leyak_C", function()
-    mainHook()
+  RegisterHook("/Script/Engine.PlayerController:ClientRestart", function ()
+    registerLeyakUpdateVisibilityHook()
   end)
 
   utils.log("Main hook registered.")

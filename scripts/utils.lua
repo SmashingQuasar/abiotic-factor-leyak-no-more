@@ -33,25 +33,6 @@ local function sendScopedChatMessage(message, colour)
   playerController:Local_DisplayTextChatMessage("", colour, message, colour)
 end
 
-local aiDirector = nil
-
---- Helper used to retrieved the Abiotic_AIDirector_C
---- It will cache the result to avoid calling again the FindFirstOf function.
---- @return AAbiotic_AIDirector_C
-local function getAIDirector()
-  if aiDirector ~= nil and aiDirector:IsValid() then
-    return aiDirector
-  end
-
-  aiDirector = FindFirstOf("Abiotic_AIDirector_C")
-
-  if aiDirector == nil then
-    error("Unable to find AIDirector")
-  end
-
-  return aiDirector
-end
-
 local deathMessages = {
   "{{actor}} forgot to keep their blood inside their body.",
   "{{actor}} experienced excessive blunt force trauma.",
@@ -115,7 +96,6 @@ return {
   log = log,
   sendWarningMessage = sendWarningMessage,
   isDebug = isDebug,
-  getAIDirector = getAIDirector,
   sendScopedChatMessage = sendScopedChatMessage,
   generateDeathMessage = generateDeathMessage
 }
