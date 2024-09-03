@@ -1,5 +1,6 @@
 require("UEHelpers")
 
+local configuration = require("configuration")
 local utils = require("utils")
 
 local leyakDisabled = true
@@ -17,24 +18,33 @@ end
 --- in the game crashing when exiting because it does not clean up the
 --- game memory.
 local function onUpdateLeyakVisibility(Context)
-  ---@type ANPC_Leyak_C
-  local leyakNPC = Context:get()
+  if leyakDisabled then
+    ---@type ANPC_Leyak_C
+    local leyakNPC = Context:get()
 
-  utils.log("Dropping leyak essence.")
+    if configuration.shouldDropEssence() then
+      utils.log("Dropping leyak essence.")
 
-  leyakNPC:DropEssence()
-  leyakNPC.SeenDespawnTime = 0.1
-  leyakNPC.TimeAllowedToBeStuck = 0.1
+      leyakNPC:DropEssence()
+    end
 
-  utils.log("Sticking Leyak")
+    leyakNPC.SeenDespawnTime = 0.1
+    leyakNPC.TimeAllowedToBeStuck = 0.1
 
-  leyakNPC.AbsolutelyStuck = true
+    utils.log("Sticking Leyak")
 
-  utils.log("Leyak stuck.")
+    leyakNPC.AbsolutelyStuck = true
 
-  local message = utils.generateDeathMessage("Leyak")
+    utils.log("Leyak stuck.")
 
-  utils.sendScopedChatMessage(message, { R = 1.0, G = 0.0, B = 0.0, A = 1.0 })
+    local message = utils.generateDeathMessage("Leyak")
+
+    if configuration.shouldSendMessageOnDeath() then
+
+      utils.sendScopedChatMessage(message, { R = 1.0, G = 0.0, B = 0.0, A = 1.0 })
+
+    end
+  end
 end
 
 --- This function will disable the Leyak by changing
@@ -70,5 +80,7 @@ end
 return {
   onUpdateLeyakVisibility = onUpdateLeyakVisibility,
   toggle = toggle,
+  enable = enable,
+  disable = disable,
   isDisabled = isDisabled
 }

@@ -86,16 +86,36 @@ local function generateDeathMessage(actor)
   return result
 end
 
---- Function used to identify if the mod is in debug mode.
---- @return boolean
-local function isDebug()
-  return false
+--- A simpler helper function that splits a string
+--- on the given delimiter and returns a table.
+--- @param text string
+--- @param delimiter string
+--- @
+local function splitString(text, delimiter)
+  local result = { }
+  local from = 1
+
+  local delimFrom, delimTo = string.find(text, delimiter, from)
+
+  while delimFrom do
+
+    local toInsert = string.sub(text, from , delimFrom - 1)
+
+    table.insert(result, toInsert)
+    from  = delimTo + 1
+    delimFrom, delimTo = string.find(text, delimiter, from)
+
+  end
+
+  table.insert(result, string.sub(text, from))
+
+  return result
 end
 
 return {
   log = log,
   sendWarningMessage = sendWarningMessage,
-  isDebug = isDebug,
   sendScopedChatMessage = sendScopedChatMessage,
-  generateDeathMessage = generateDeathMessage
+  generateDeathMessage = generateDeathMessage,
+  splitString = splitString
 }
