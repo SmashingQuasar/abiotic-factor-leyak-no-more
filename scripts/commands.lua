@@ -5,15 +5,21 @@ local configuration = require("configuration")
 local utils = require("utils")
 
 local function leyakEnable()
-  leyakModule.enable()
+  configuration.enableLeyak()
 end
 
 local function leyakDisable()
-  leyakModule.disable()
+  configuration.disableLeyak()
 end
 
 local function leyakToggle()
-  leyakModule.toggle()
+  if configuration.isLeyakDisabled() then
+    configuration.enableLeyak()
+
+    return
+  end
+  
+  configuration.disableLeyak()
 end
 
 local function leyakEnableEssence()
@@ -40,6 +46,18 @@ local function leyakToggleDeathMessage()
   configuration.changeSendMessageOnDeath(not configuration.shouldSendMessageOnDeath())
 end
 
+local function leyakMakeContainmentPermanent()
+  configuration.changePermanentContainment(true)
+end
+
+local function leyakMakeContainmentTemporary()
+  configuration.changePermanentContainment(false)
+end
+
+local function leyakToggleContainment()
+  configuration.changePermanentContainment(not configuration.isContainmentPermanent())
+end
+
 local function showHelp()
   utils.sendScopedChatMessage([[
     LeyakNoMore help...
@@ -53,7 +71,10 @@ local function showHelp()
       /lnm dropEssence toggle => Inverts the status of the Leyak dropping its essence when being despawned by the mod. Has no effect if the Leyak is enabled.
       /lnm deathMessage enable => Enables flavour death messages being shown in chat when the Leyak is despawned. Has no effect if the Leyak is enabled.
       /lnm deathMessage disable => Disables flavour death messages being shown in chat when the Leyak is despawned. Has no effect if the Leyak is enabled.
-      /lnm deathMessage toggle => Inverts the satus of the death messages.
+      /lnm deathMessage toggle => Inverts the status of the death messages.
+      /lnm containment permanent => Makes containment permanent.
+      /lnm containment temporary => Makes containment temporary.
+      /lnm containment toggle => Inverts the status of the containment. 
   ]], { R = 1.0, G = 1.0, B = 1.0, A = 1.0 })
 end
 
@@ -147,6 +168,38 @@ local function handleDeathMessagesCommand(explodedString)
   end
 end
 
+local function handleContainmentCommand(explodedString)
+  if explodedString[2] ~= "containment" then
+    return
+  end
+
+  if explodedString[3] == nil then
+    return
+  end
+
+  if explodedString[3] == "permanent" then
+    leyakMakeContainmentPermanent()
+
+    utils.sendWarningMessage("Leyak permanent containment enabled.", 1)
+
+    return
+  end
+
+  if explodedString[3] == "temporary" then
+    leyakMakeContainmentTemporary()
+
+    utils.sendWarningMessage("Leyak permanent containment disabled.", 1)
+
+    return
+  end
+
+  if explodedString[3] == "toggle" then
+    leyakToggleContainment()
+
+    return
+  end
+end
+
 return {
   leyakEnable = leyakEnable,
   leyakDisable = leyakDisable,
@@ -161,5 +214,6 @@ return {
   handleHelp = handleHelp,
   handleLeyakCommand = handleLeyakCommand,
   handleDropEssenceCommand = handleDropEssenceCommand,
-  handleDeathMessagesCommand = handleDeathMessagesCommand
+  handleDeathMessagesCommand = handleDeathMessagesCommand,
+  handleContainmentCommand = handleContainmentCommand
 }
